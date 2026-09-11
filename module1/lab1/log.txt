@@ -23,7 +23,7 @@ Notes:
         - We can ping 9.9.9.9 which shows we do have a connection, but chromium doesn't load.
 - For creating a script, we made a directory in Documents/cpsc3340/module1/lab1
 - Now writing a script in this folder called autobackup.sh
-    - Wrote two lines: "cp //bot/config.txt ~/Documents/cpsc3340/module/lab1"
+    - Wrote two lines: "cp //boot/config.txt ~/Documents/cpsc3340/module/lab1"
     - "hostname -I > ip.md
     - Had to chmod 777 to be able to execute it
     - config.txt has moved to //boot/firmware/config.txt
@@ -35,6 +35,11 @@ Notes:
     - Still not working after that. Service is enabled when checked.
     - Now trying to move autobackup.sh to //boot (and changed path in 
     - Now trying to add shebang at start of .sh (fixed the exec format error)
-    - Now realized that script did not have absolute path
+    - Now realized that script did not have absolute path (Need to do //home/stu3340/...)
     - Now it works
-- TODO: Github integration
+- Now to add Github integration
+    - Expanded script to include the lines: 
+    git -C //home/stu3340/creative-embedded-systems/raspberrypi/.config commit -am "auto backup config and IP address"
+    git -C //home/stu3340/creative-embedded-systems/raspberrypi/.config push origin main
+    - Didn't work at first: had to 1. add it as a safe repository by doing git config --global --add safe.direcotry {directory name} 2. Register a git user name and email
+

@@ -33,7 +33,11 @@ class Painter {
 	}
 
 	display() {
-
+		for (let i = 0; i < this.pDots.length; i++) {
+			fill(this.r, this.g, this.b, 0.5)
+			circle(this.pDots[i].x, this.pDots[i].y, 10)
+			console.log(this.pDots[i].x, this.pDots[i].y)
+		}
 	}
 }
 
@@ -51,7 +55,7 @@ function setup() {
 		}
 		dots.push(row);
 	}
-
+	
 	let startingDots = [dots[1][1], dots[height - 2][1], dots[height-2][width-2], dots[1][width-2]]
 
 	for (let i = 0; i < numPainters; i++) {

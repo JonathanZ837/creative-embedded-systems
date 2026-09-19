@@ -9,7 +9,10 @@ let height = 0; // in dots
 let numPainters = 4;
 let painters = [];
 let painterDotDiameter = 20;
-let painterIdleTime = 60;
+let painterIdleTime = 30;
+let lerpSpeed = 0.05;
+let painterStrokeWeight = 8;
+let painterDotOpacity = 170;
 //let painterDirections = [[1, 1], [1, 0], [1, -1], [0, 1], [0, -1], [-1, -1], [-1, 0], [-1, 1]]
 let painterDirections = [[[-1, 0], [-1, 1], [0, 1]], [[-1, 0], [-1, 1], [0, 1], [-1, -1], [0, -1]], [[-1, 0], [-1, -1], [0, -1]], [[-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0]],[[-1, 0], [-1, 1], [-1, -1], [0, -1], [0,1], [1, 0], [1, -1], [1,1]], [[-1, 0], [-1, -1], [0, -1], [1, 0], [1, -1]],[[1, 0], [0, 1], [1, 1]],[[1, 0], [0, 1], [1, 1], [0, -1], [1, -1]], [[1, 0], [0, -1], [1, -1]]] // bottom left, bottom center, bottom right, middle left, middle center, middle right, upper left, upper center, upper right
 let colorPalette = [[1, 41, 95], [132, 147, 36], [255, 179, 15], [253, 21, 27]];
@@ -35,9 +38,12 @@ class Painter {
 		this.b = b;
 		this.pDots = [startingDot];
 		this.currDot = startingDot;
+		this.targetDot = startingDot;
+		this.phantomDotX = startingDot.x;
+		this.phantomDotY = startingDot.y;
 		this.state = 'IDLE'
 		this.idleTime = painterIdleTime;
-		this.movingTime = 60;
+		this.movingLerp = 0;
 	}
 
 	move() {
@@ -76,36 +82,53 @@ class Painter {
 					}
 				}
 				let newDot = dots[this.currDot.i + direction[0]][this.currDot.j + direction[1]]
-				this.pDots.push(newDot)
-				this.currDot = newDot
-				this.state == 'MOVING'
+				this.targetDot = newDot
+
+				this.state = 'MOVING'
 			} else {
 				this.idleTime -= 1;
 			}
 		} else if (this.state == 'MOVING') {
-			if (this.movingTime == 0) {
-				this.movingTime = 60;
+			if (this.movingLerp >= 1) {
+				this.movingLerp = 0;
+				this.pDots.push(this.targetDot);
+				this.currDot = this.targetDot;
 				this.state = 'IDLE'
 			} else {
-				this.movingTime -= 1;
+				this.phantomDotX = lerp(this.phantomDotX, this.targetDot.x, this.movingLerp)
+				this.phantomDotY = lerp(this.phantomDotY, this.targetDot.y, this.movingLerp)
+				this.movingLerp += lerpSpeed;
 			}
 		}
 	}
 
 	display() {
-		for (let i = 0; i < this.pDots.length; i++) {
-			fill(this.r, this.g, this.b, 125)
+
+		fill(this.r, this.g, this.b, painterDotOpacity)
+		for (let i = 0; i < this.pDots.length - 1; i++) {
+			noStroke();
 			circle(this.pDots[i].x, this.pDots[i].y, painterDotDiameter)
-			console.log(this.pDots[i].x)
-			console.log(this.pDots[i].y)
+			strokeWeight(painterStrokeWeight)
+			stroke(this.r, this.g, this.b, painterDotOpacity)
+			line(this.pDots[i].x, this.pDots[i].y, this.pDots[i+1].x, this.pDots[i+1].y)
 		}
+		noStroke()
+		circle(this.pDots[this.pDots.length-1].x, this.pDots[this.pDots.length-1].y, painterDotDiameter)
+
+		if (this.state == 'MOVING') {
+			strokeWeight(painterStrokeWeight)
+			stroke(this.r, this.g, this.b, painterDotOpacity)
+			line(this.pDots[this.pDots.length-1].x, this.pDots[this.pDots.length-1].y, this.phantomDotX, this.phantomDotY)
+			noStroke()
+			circle(this.phantomDotX, this.phantomDotY, painterDotDiameter)
+		}
+		
 	}
 }
 
 function setup() {
 	createCanvas(windowWidth, windowHeight);
-	noStroke();
-	background(237,232,208);
+	
 	width = Math.floor(windowWidth / spaceBetweenDots);
 	height = Math.floor(windowHeight / spaceBetweenDots);
 	for (let i = 0; i < height; i++) {
@@ -125,7 +148,9 @@ function setup() {
 }
 
 function draw() {
+	background(237,232,208);
 	translate(spaceBetweenDots, spaceBetweenDots)
+	noStroke();
 	for (let i = 0; i < height; i++) {
 		for (let j = 0; j < width; j++) {
 			dots[i][j].display();
@@ -133,7 +158,8 @@ function draw() {
 	}
 
 	for (let i = 0; i < numPainters; i++) {
-		painters[i].move();
+		
 		painters[i].display();
+		painters[i].move();
 	}
 }

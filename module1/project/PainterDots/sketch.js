@@ -44,6 +44,7 @@ class Painter {
 		this.state = 'IDLE'
 		this.idleTime = painterIdleTime;
 		this.movingLerp = 0;
+		this.lastDirectionInverse = [0,0];
 	}
 
 	move() {
@@ -51,36 +52,42 @@ class Painter {
 			if (this.idleTime == 0) {
 				this.idleTime = painterIdleTime;
 
-				let direction = [0, 0];
-
+				let directionType = -1;
 				// determine direction based on boundary conditions :o				
 				if (this.currDot.i == 0) { // upper
 					if (this.currDot.j == 0) {
-						direction = random(painterDirections[6]);
-
+						directionType = 6;
 					} else if (this.currDot.j == width - 1) {
-						direction = random(painterDirections[8]);
+						directionType = 8;
 					} else {
-						direction = random(painterDirections[7]);
+						directionType = 7;
 					}
 				} else if (this.currDot.i == height - 1) { // lower
 					if (this.currDot.j == 0) {
-						direction = random(painterDirections[0]);
-
+						directionType = 0;
 					} else if (this.currDot.j == width - 1) {
-						direction = random(painterDirections[2]);
+						directionType = 2;
 					} else {
-						direction = random(painterDirections[1]);
+						directionType = 1;
 					}
 				} else {
 					if (this.currDot.j == 0) { // middle
-						direction = random(painterDirections[3]);
+						directionType = 3;
 					} else if (this.currDot.j == width - 1) {
-						direction = random(painterDirections[5]);
+						directionType = 5;
 					} else {
-						direction = random(painterDirections[4]);
+						directionType = 4;
 					}
 				}
+
+				let idx = floor(random(1, painterDirections[directionType].length));
+				let direction = painterDirections[directionType][idx];
+				if (direction[0] == this.lastDirectionInverse[0] && direction[1] == this.lastDirectionInverse[1]) {
+					console.log("inverse spotted")
+					direction = painterDirections[directionType][(idx + 1) % painterDirections[directionType].length];
+				}
+				
+				this.lastDirectionInverse = [-direction[0], -direction[1]]
 				let newDot = dots[this.currDot.i + direction[0]][this.currDot.j + direction[1]]
 				this.targetDot = newDot
 

@@ -9,7 +9,7 @@ let height = 0; // in dots
 let numPainters = 4;
 let painters = [];
 let painterDotDiameter = 20;
-let painterIdleTime = 30;
+let painterIdleTime = 5;
 let lerpSpeed = 0.05;
 let painterStrokeWeight = 8;
 let painterDotOpacity = 170;
@@ -23,6 +23,7 @@ class Dot {
 		this.y = y;
 		this.i = i; // the row that this dot belongs to in dots[]
 		this.j = j; // the col that this dot belongs to in dots[]
+		this.painter = null;
 	}
 
 	display() {
@@ -44,7 +45,40 @@ class Painter {
 		this.state = 'IDLE'
 		this.idleTime = painterIdleTime;
 		this.movingLerp = 0;
-		this.lastDirectionInverse = [0,0];
+
+		startingDot.painter = this;
+	}
+
+	getDirectionType() {
+		let directionType = -1;
+		// determine direction based on boundary conditions :o				
+		if (this.currDot.i == 0) { // upper
+			if (this.currDot.j == 0) {
+				directionType = 6;
+			} else if (this.currDot.j == width - 1) {
+				directionType = 8;
+			} else {
+				directionType = 7;
+			}
+		} else if (this.currDot.i == height - 1) { // lower
+			if (this.currDot.j == 0) {
+				directionType = 0;
+			} else if (this.currDot.j == width - 1) {
+				directionType = 2;
+			} else {
+				directionType = 1;
+			}
+		} else {
+			if (this.currDot.j == 0) { // middle
+				directionType = 3;
+			} else if (this.currDot.j == width - 1) {
+				directionType = 5;
+			} else {
+				directionType = 4;
+			}
+		}
+
+		return directionType;
 	}
 
 	move() {
@@ -52,43 +86,33 @@ class Painter {
 			if (this.idleTime == 0) {
 				this.idleTime = painterIdleTime;
 
-				let directionType = -1;
-				// determine direction based on boundary conditions :o				
-				if (this.currDot.i == 0) { // upper
-					if (this.currDot.j == 0) {
-						directionType = 6;
-					} else if (this.currDot.j == width - 1) {
-						directionType = 8;
-					} else {
-						directionType = 7;
-					}
-				} else if (this.currDot.i == height - 1) { // lower
-					if (this.currDot.j == 0) {
-						directionType = 0;
-					} else if (this.currDot.j == width - 1) {
-						directionType = 2;
-					} else {
-						directionType = 1;
-					}
-				} else {
-					if (this.currDot.j == 0) { // middle
-						directionType = 3;
-					} else if (this.currDot.j == width - 1) {
-						directionType = 5;
-					} else {
-						directionType = 4;
+				let directionType = this.getDirectionType();
+
+				
+				let possibleToMove = false;
+				for (let i = 0; i < painterDirections[directionType].length; i++) {
+					let possibleDirection = painterDirections[directionType][i]
+					let nextDot = dots[this.currDot.i + possibleDirection[0]][this.currDot.j + possibleDirection[1]]
+					if (nextDot.painter == null) {
+						possibleToMove = true;
+						break;
 					}
 				}
 
-				let idx = floor(random(1, painterDirections[directionType].length));
-				let direction = painterDirections[directionType][idx];
-				if (direction[0] == this.lastDirectionInverse[0] && direction[1] == this.lastDirectionInverse[1]) {
-					console.log("inverse spotted")
-					direction = painterDirections[directionType][(idx + 1) % painterDirections[directionType].length];
+				if (!possibleToMove) {
+					this.state = 'STUCK'
+					return;
 				}
-				
-				this.lastDirectionInverse = [-direction[0], -direction[1]]
+
+
+				let idx = floor(random(0, painterDirections[directionType].length));
+				let direction = painterDirections[directionType][idx];
+				while (dots[this.currDot.i + direction[0]][this.currDot.j + direction[1]].painter != null) {
+					idx = (idx + 1) % painterDirections[directionType].length;
+					direction = painterDirections[directionType][idx];
+				}
 				let newDot = dots[this.currDot.i + direction[0]][this.currDot.j + direction[1]]
+				newDot.painter = this;
 				this.targetDot = newDot
 
 				this.state = 'MOVING'
@@ -106,6 +130,8 @@ class Painter {
 				this.phantomDotY = lerp(this.phantomDotY, this.targetDot.y, this.movingLerp)
 				this.movingLerp += lerpSpeed;
 			}
+		} else if (this.state == 'STUCK') {
+			return;
 		}
 	}
 

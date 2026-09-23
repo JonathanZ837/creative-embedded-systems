@@ -1,10 +1,11 @@
+let dots = []; // a 2D array with height rows and width cols containing Dot objects
 
-let dots = [];
+let width = 0; // in dots (to be initialized in setup)
+let height = 0; // in dots (to be initialized in setup)
+
+// GLOBAL PARAMETERS
 let spaceBetweenDots = 50;
 let dotDiameter = 10;
-
-let width = 0; // in dots
-let height = 0; // in dots
 
 let numPainters = 4;
 let painters = [];
@@ -14,19 +15,19 @@ let lerpSpeed = 0.05;
 let painterStrokeWeight = 8;
 let painterDotOpacity = 170;
 let painterDirections = [[1, 1], [1, 0], [1, -1], [0, 1], [0, -1], [-1, -1], [-1, 0], [-1, 1]]
-//let painterDirections = [[[-1, 0], [-1, 1], [0, 1]], [[-1, 0], [-1, 1], [0, 1], [-1, -1], [0, -1]], [[-1, 0], [-1, -1], [0, -1]], [[-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0]],[[-1, 0], [-1, 1], [-1, -1], [0, -1], [0,1], [1, 0], [1, -1], [1,1]], [[-1, 0], [-1, -1], [0, -1], [1, 0], [1, -1]],[[1, 0], [0, 1], [1, 1]],[[1, 0], [0, 1], [1, 1], [0, -1], [1, -1]], [[1, 0], [0, -1], [1, -1]]] // bottom left, bottom center, bottom right, middle left, middle center, middle right, upper left, upper center, upper right
 let transportSpeed = 0.05;
 
-let painterStartingPositions = [[]]
 let colorPalette = [[1, 41, 95], [132, 147, 36], [255, 179, 15], [253, 21, 27]];
 
+
+// A dot representing a location on the grid to which the painters can travel to
 class Dot {
 	constructor(x,y, i, j) {
 		this.x = x;
 		this.y = y;
 		this.i = i; // the row that this dot belongs to in dots[]
 		this.j = j; // the col that this dot belongs to in dots[]
-		this.painter = null;
+		this.painter = null; // the painter that this dot belongs to (null if it is painterless)
 	}
 
 	display() {
@@ -35,6 +36,7 @@ class Dot {
 	}
 }
 
+// A subway line (I originally called it painter since I wasn't sure what to call it oops) that is displayed as a colorful line
 class Painter {
 	constructor(r, g, b, startingDot) {
 		this.r = r;
@@ -60,6 +62,7 @@ class Painter {
 		this.transportDirection = 1;
 	}
 
+	// gets the next valid direction for the painter to move in, returns -1 if no valid direction available
 	getDirection() {
 		let possibleIndices = []
 		for (let i = 0; i < painterDirections.length; i++) {
@@ -83,6 +86,7 @@ class Painter {
 		}
 	}
 
+	// the state machine that performs an animation or movement based on what state the painter is in
 	move() {
 		if (this.state == 'IDLE') {
 			if (this.idleTime == 0) {
@@ -110,6 +114,7 @@ class Painter {
 				this.currDot = this.targetDot;
 				this.state = 'IDLE'
 			} else {
+				// smooth decelerating motion with lerp
 				this.phantomDotX = lerp(this.phantomDotX, this.targetDot.x, this.movingLerp)
 				this.phantomDotY = lerp(this.phantomDotY, this.targetDot.y, this.movingLerp)
 				this.movingLerp += lerpSpeed;
@@ -130,6 +135,7 @@ class Painter {
 				}
 			}
 
+			// constant linear motion with lerp
 			this.transportDotX = lerp(this.pDots[this.transportIdx].x, this.pDots[this.transportIdx + this.transportDirection].x, this.transportLerp);
 			this.transportDotY = lerp(this.pDots[this.transportIdx].y, this.pDots[this.transportIdx + this.transportDirection].y, this.transportLerp);
 			this.transportLerp += transportSpeed;
@@ -162,25 +168,36 @@ class Painter {
 			circle(this.transportDotX, this.transportDotY, painterDotDiameter)
 		}
 
-		
-		
 	}
 }
 
 function setup() {
 	createCanvas(windowWidth, windowHeight);
 	
-	width = Math.floor(windowWidth / spaceBetweenDots);
-	height = Math.floor(windowHeight / spaceBetweenDots);
+	// to scale to different screen sizes, I clamped the true space between dots to be between 40 and some number scaled to the min of width and height
+	let scaledSpaceBetweenDots = max(40,spaceBetweenDots * (min(windowWidth, windowHeight)/800))
+
+	// the number of dots is just determined by how many dots the window can hold with the new scaled spacing, since we want to fill the entire window
+	width = Math.floor(windowWidth / scaledSpaceBetweenDots);
+	height = Math.floor(windowHeight / scaledSpaceBetweenDots);
 	for (let i = 0; i < height; i++) {
 		let row = [];
 		for (let j = 0; j < width; j++) {
-			row.push(new Dot(j * spaceBetweenDots, i * spaceBetweenDots, i, j));
+			row.push(new Dot(j * scaledSpaceBetweenDots, i * scaledSpaceBetweenDots, i, j));
 		}
 		dots.push(row);
 	}
 	
-	let startingDots = [dots[2][2], dots[height - 3][2], dots[height-3][width-3], dots[2][width-3]]
+	// randomly determine the 4 starting locations of the 4 painters/subways, where each will be sampled from a unique quadrant of the window
+	let startingDots = []
+	let s1 = [Math.floor(random(1,Math.floor(height/2))), Math.floor(random(1, Math.floor(width/2)))]
+	let s2 = [Math.floor(random(1,Math.floor(height/2))), Math.floor(random(Math.floor(width/2) + 1, width - 1))]
+	let s3 = [Math.floor(random(Math.floor(height/2) + 1, height - 1)), Math.floor(random(1, Math.floor(width/2)))]
+	let s4 = [Math.floor(random(Math.floor(height/2) + 1, height - 1)), Math.floor(random(Math.floor(width/2) + 1, width - 1))]
+	startingDots.push(dots[s1[0]][s1[1]])
+	startingDots.push(dots[s2[0]][s2[1]])
+	startingDots.push(dots[s3[0]][s3[1]])
+	startingDots.push(dots[s4[0]][s4[1]])
 
 	for (let i = 0; i < numPainters; i++) {
 		painters.push(new Painter(colorPalette[i][0], colorPalette[i][1], colorPalette[i][2],startingDots[i]))

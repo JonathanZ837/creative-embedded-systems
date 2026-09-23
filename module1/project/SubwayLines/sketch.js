@@ -19,7 +19,7 @@ let transportSpeed = 0.05;
 
 let colorPalette = [[1, 41, 95], [132, 147, 36], [255, 179, 15], [253, 21, 27]];
 
-let WarmupTime = 2500;
+let WarmupTime = 0;
 
 // A dot representing a location on the grid to which the painters can travel to
 class Dot {
@@ -121,8 +121,9 @@ class Painter {
 				this.movingLerp += lerpSpeed;
 			}
 		} else if (this.state == 'SHRINKING') {
-			if (this.dotDiameter == 0) {
+			if (this.dotDiameter <= 0) {
 				this.state = 'TRANSPORTING';
+				this.dotDiameter = 0;
 				return;
 			} else {
 				this.dotDiameter -= 0.5;
@@ -188,6 +189,9 @@ function setup() {
 		}
 		dots.push(row);
 	}
+
+	painterStrokeWeight = max(painterStrokeWeight, min(windowHeight, windowWidth)/700 * painterStrokeWeight)
+	painterDotDiameter = 2.5 * painterStrokeWeight;
 	
 	// randomly determine the 4 starting locations of the 4 painters/subways, where each will be sampled from a unique quadrant of the window
 	let startingDots = []

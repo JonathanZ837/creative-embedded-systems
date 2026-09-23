@@ -19,6 +19,7 @@ let transportSpeed = 0.05;
 
 let colorPalette = [[1, 41, 95], [132, 147, 36], [255, 179, 15], [253, 21, 27]];
 
+let WarmupTime = 2500;
 
 // A dot representing a location on the grid to which the painters can travel to
 class Dot {
@@ -173,7 +174,7 @@ class Painter {
 
 function setup() {
 	createCanvas(windowWidth, windowHeight);
-	
+	noCursor();
 	// to scale to different screen sizes, I clamped the true space between dots to be between 40 and some number scaled to the min of width and height
 	let scaledSpaceBetweenDots = max(40,spaceBetweenDots * (min(windowWidth, windowHeight)/800))
 
@@ -213,6 +214,10 @@ function draw() {
 		for (let j = 0; j < width; j++) {
 			dots[i][j].display();
 		}
+	}
+
+	if (millis() < WarmupTime) {
+		return;
 	}
 
 	for (let i = 0; i < numPainters; i++) {

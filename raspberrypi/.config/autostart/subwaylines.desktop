@@ -1,0 +1,4 @@
+[Desktop Entry]
+Type=Application
+Name=Subway Lines
+Exec=firefox --kiosk file:///home/stu3340/creative-embedded-systems/module1/project/SubwayLines/index.html

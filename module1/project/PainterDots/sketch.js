@@ -15,6 +15,7 @@ let painterStrokeWeight = 8;
 let painterDotOpacity = 170;
 let painterDirections = [[1, 1], [1, 0], [1, -1], [0, 1], [0, -1], [-1, -1], [-1, 0], [-1, 1]]
 //let painterDirections = [[[-1, 0], [-1, 1], [0, 1]], [[-1, 0], [-1, 1], [0, 1], [-1, -1], [0, -1]], [[-1, 0], [-1, -1], [0, -1]], [[-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0]],[[-1, 0], [-1, 1], [-1, -1], [0, -1], [0,1], [1, 0], [1, -1], [1,1]], [[-1, 0], [-1, -1], [0, -1], [1, 0], [1, -1]],[[1, 0], [0, 1], [1, 1]],[[1, 0], [0, 1], [1, 1], [0, -1], [1, -1]], [[1, 0], [0, -1], [1, -1]]] // bottom left, bottom center, bottom right, middle left, middle center, middle right, upper left, upper center, upper right
+let transportSpeed = 0.05;
 
 let painterStartingPositions = [[]]
 let colorPalette = [[1, 41, 95], [132, 147, 36], [255, 179, 15], [253, 21, 27]];
@@ -48,8 +49,15 @@ class Painter {
 		this.idleTime = painterIdleTime;
 		this.movingLerp = 0;
 		this.lastDirection = [0,0]
-
+		this.dotDiameter = painterDotDiameter;
 		startingDot.painter = this;
+
+		this.transportDotX = startingDot.x;
+		this.transportDotY = startingDot.y;
+		this.transportLerp = 0;
+		this.transportIdx = 0;
+		this.targetDot = this.pDots[1];
+		this.transportDirection = 1;
 	}
 
 	getDirection() {
@@ -57,7 +65,6 @@ class Painter {
 		for (let i = 0; i < painterDirections.length; i++) {
 			let possibleDirection = painterDirections[i]
 			if (this.currDot.i + possibleDirection[0] < height && this.currDot.i + possibleDirection[0] >= 0 && this.currDot.j + possibleDirection[1] < width && this.currDot.j + possibleDirection[1] >= 0) {
-				console.log(this.currDot.i + possibleDirection[0],this.currDot.j + possibleDirection[1] )
 				let nextDot = dots[this.currDot.i + possibleDirection[0]][this.currDot.j + possibleDirection[1]]
 				if (nextDot.painter == null) {
 					possibleIndices.push(i);
@@ -83,7 +90,7 @@ class Painter {
 				
 				let directionIdx = this.getDirection();
 				if (directionIdx < 0) {
-					this.state = 'STUCK';
+					this.state = 'SHRINKING';
 					return;
 				}
 				let direction = painterDirections[directionIdx];
@@ -92,7 +99,6 @@ class Painter {
 				this.targetDot = newDot
 
 				this.lastDirection = direction;
-
 				this.state = 'MOVING'
 			} else {
 				this.idleTime -= 1;
@@ -108,31 +114,55 @@ class Painter {
 				this.phantomDotY = lerp(this.phantomDotY, this.targetDot.y, this.movingLerp)
 				this.movingLerp += lerpSpeed;
 			}
-		} else if (this.state == 'STUCK') {
+		} else if (this.state == 'SHRINKING') {
+			if (this.dotDiameter == 0) {
+				this.state = 'TRANSPORTING';
+				return;
+			} else {
+				this.dotDiameter -= 0.5;
+			}
+		} else if (this.state == 'TRANSPORTING') {
+			if (this.transportLerp >= 1) {
+				this.transportLerp = 0;
+				this.transportIdx += this.transportDirection;
+				if (this.transportIdx == this.pDots.length - 1|| this.transportIdx == 0) {
+					this.transportDirection *= -1;
+				}
+			}
+
+			this.transportDotX = lerp(this.pDots[this.transportIdx].x, this.pDots[this.transportIdx + this.transportDirection].x, this.transportLerp);
+			this.transportDotY = lerp(this.pDots[this.transportIdx].y, this.pDots[this.transportIdx + this.transportDirection].y, this.transportLerp);
+			this.transportLerp += transportSpeed;
+			
 			return;
 		}
 	}
 
 	display() {
-
-		fill(this.r, this.g, this.b, painterDotOpacity)
+		fill(this.r, this.g, this.b, painterDotOpacity);
+		noStroke();
 		for (let i = 0; i < this.pDots.length - 1; i++) {
 			noStroke();
-			circle(this.pDots[i].x, this.pDots[i].y, painterDotDiameter)
-			strokeWeight(painterStrokeWeight)
-			stroke(this.r, this.g, this.b, painterDotOpacity)
+			circle(this.pDots[i].x, this.pDots[i].y, this.dotDiameter);
+			strokeWeight(painterStrokeWeight);
+			stroke(this.r, this.g, this.b, painterDotOpacity);
 			line(this.pDots[i].x, this.pDots[i].y, this.pDots[i+1].x, this.pDots[i+1].y)
 		}
-		noStroke()
-		circle(this.pDots[this.pDots.length-1].x, this.pDots[this.pDots.length-1].y, painterDotDiameter)
-
+		noStroke();
+		circle(this.pDots[this.pDots.length-1].x, this.pDots[this.pDots.length-1].y, this.dotDiameter);
 		if (this.state == 'MOVING') {
 			strokeWeight(painterStrokeWeight)
 			stroke(this.r, this.g, this.b, painterDotOpacity)
 			line(this.pDots[this.pDots.length-1].x, this.pDots[this.pDots.length-1].y, this.phantomDotX, this.phantomDotY)
 			noStroke()
-			circle(this.phantomDotX, this.phantomDotY, painterDotDiameter)
+			circle(this.phantomDotX, this.phantomDotY, this.dotDiameter)
 		}
+
+		if (this.state == 'TRANSPORTING') {
+			circle(this.transportDotX, this.transportDotY, painterDotDiameter)
+		}
+
+		
 		
 	}
 }

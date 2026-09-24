@@ -3,7 +3,7 @@ Author: Jonathan Zeng
 ## Description
 
 ![A screenshot from a sample generation of Subway Lines](subwaylines.png)
-Subway Lines is a visual generative artwork for a single display exhibition. It is an abstract representation of the beauty of public transit routes and their structure.
+Subway Lines is a visual generative artwork for a single display exhibition. It is an abstract representation of the beauty of public transit routes and their structure. [Blog](https://app.notion.com/p/Module-1-Project-Subway-Lines-3e4ca9b192a2803a93a8e70a9b5a395f?source=copy_link)
 
 ## Video
 

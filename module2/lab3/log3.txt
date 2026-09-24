@@ -17,4 +17,6 @@ Notes:
         - Connecting power from breadboard (anything along red line) to the joystick pin.
         - It worked by setting joyX as a button (we got 5 states).
         - Anytime the joystick was to the right of center, it counted as being pressed.
-
+Wires used:
+    - 8 F to M wires
+    - 1 F to F 

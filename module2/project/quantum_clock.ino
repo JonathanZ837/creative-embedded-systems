@@ -15,8 +15,7 @@ const int screenHeight = 32;
 
 int oledSDAPin = 8;
 int oledSCLPin = 9;
-int sensorTrigPin = 5;
-int sensorEchoPin = 6;
+int lightSensorPin = 4;
 
 Adafruit_SSD1306 display(screenWidth, screenHeight, &Wire, -1);
 
@@ -64,33 +63,8 @@ void showFakeTime() {
     display.display();
 }
 
-float readDistance() {
-    digitalWrite(sensorTrigPin, LOW);
-    delayMicroseconds(2);
-    digitalWrite(sensorTrigPin, HIGH);
-    delayMicroseconds(10);
-    digitalWrite(sensorTrigPin, LOW);
-
-    float duration = pulseIn(sensorEchoPin, HIGH, 30000);
-    float distance = duration * 0.0343 / 2.0;
-    return distance;
-}
-
-void showDistance(float distance) {
-    display.clearDisplay();
-    display.setCursor(0,0);
-    String distanceStr = String((int)round(distance));
-
-    display.print(distanceStr);
-    display.print("cm");
-    display.display();
-}
-
 void setup() {
     Serial.begin(115200);
-
-    pinMode(sensorTrigPin, OUTPUT);
-    pinMode(sensorEchoPin, INPUT);
 
     Wire.begin(oledSDAPin, oledSCLPin);
     display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
@@ -115,8 +89,8 @@ void setup() {
 }
 
 void loop() {
-    float distance = readDistance();
-    if (distance < 10) {
+    float brightness = analogRead(lightSensorPin);
+    if (brightness > 3900) {
         struct tm t;
         if (getLocalTime(&t)) {
             showRealTime(t);

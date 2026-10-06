@@ -90,7 +90,7 @@ void setup() {
 
 void loop() {
     float brightness = analogRead(lightSensorPin);
-    if (brightness > 3900) {
+    if (brightness > 3200) {
         struct tm t;
         if (getLocalTime(&t)) {
             showRealTime(t);

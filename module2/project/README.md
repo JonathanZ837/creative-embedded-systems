@@ -2,11 +2,12 @@
 Author: Jonathan Zeng
 ## Description
 
+![Photo of clock](clock.png)
 The quantum clock is a creative interactive device about time. Unlike an ordinary clock, it only shows the true time when “observed”, otherwise the state of the clock is unknown. In this case, being “observed” simply means when a bright enough light is shone onto the top of the clock.
 
 ## Video
 
-[Demo Video]()
+[Demo Video](https://youtu.be/plNxiVpDe5s)
 
 ## How to use
 

@@ -4,6 +4,11 @@ import time
 from bleak import BleakClient, BleakScanner
 from gpiozero import DistanceSensor
 
+import json
+import websockets
+
+clients = set()
+
 distanceSensor2 = DistanceSensor(echo=24, trigger=23, max_distance=4)  # the one on the pi
 
 DEVICE_NAME = "ESP32_Sensor"
@@ -16,6 +21,14 @@ timeout = 10 # seconds to wait for sensor 2 before resetting
 startTime = 0 # when sensor 1 was passed
 wasBlocked = False # was sensor 1 blocked on the last reading?
 
+async def ws_handler(websocket):
+    clients.add(websocket)
+    print("p5js connected")
+    try:
+        await websocket.wait_closed()
+    finally:
+        clients.discard(websocket)
+
 def on_notify(_sender, data: bytearray):
     global state, startTime, wasBlocked
     distance1 = float(data.decode().strip())
@@ -26,6 +39,12 @@ def on_notify(_sender, data: bytearray):
         print("Sensor 1 passed, timing...")
     wasBlocked = blocked
 
+
+# or maybe do some breathing exercises and it will change on how fast you were.
+def print_message(speed):
+
+        
+
 async def main():
     global state
     device = await BleakScanner.find_device_by_name(DEVICE_NAME, timeout=10)
@@ -33,6 +52,8 @@ async def main():
     if device is None:
         print("esp32 not found")
         return
+
+    await websockets.serve(ws_handler, "0.0.0.0", 8765)
 
     while True:
         async with BleakClient(device) as client:
@@ -45,13 +66,14 @@ async def main():
                         timeElapsed = time.monotonic() - startTime
                         speed = distance / timeElapsed
                         print(speed)
+                        websockets.broadcast(clients, json.dumps({"speed": speed}))
                         while distanceSensor2.distance * 100 <= passThreshold:
                             await asyncio.sleep(0.05)
                         state = "IDLE"
                     elif timeElapsed > timeout:
                         print("Timed out")
                         state = "IDLE"
-                await asyncio.sleep(0.01)   # lets BLE notifications come in
+                await asyncio.sleep(0.01)
         print("Disconnected, reconnecting...")
         state = "IDLE"
 

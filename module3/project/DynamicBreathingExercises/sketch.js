@@ -1,4 +1,4 @@
-let colorPalette = [[1, 41, 95, 120], [132, 147, 36], [255, 179, 15], [253, 21, 27]];
+let colorPalette = [[1, 41, 95, 120]];
 let dots = [];
 let speed = 5;
 
@@ -23,7 +23,7 @@ class Dot {
 		let y = lerp(this.y1, this.y2, t);
 		
 		fill(colorPalette[0]);
-		circle(x, y, 50);
+		circle(x, y, 50/t);
 		
 	}
 }

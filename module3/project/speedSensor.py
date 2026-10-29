@@ -19,6 +19,10 @@ passThreshold = 10 # distance threshold that registers as a pass
 distance = 3 # the fixed distance between two sensors
 timeout = 10 # seconds to wait for sensor 2 before resetting
 startTime = 0 # when sensor 1 was passed
+numFootsteps = 0
+numBacktracks = 0
+lastDistance2 = 0
+
 
 async def ws_handler(websocket):
     clients.add(websocket)
@@ -56,17 +60,26 @@ async def main():
                 if state == "PASSED":
                     distance2 = distanceSensor2.distance * 100
                     timeElapsed = time.monotonic() - startTime
+                    print("distance2: " + str(distance2))
+                    if lastDistance2 < distance2:
+                        numBacktracks += 1
+                    if distance2 < lastDistance2 and distance2 - lastDistance2 < 0.5:
+                        numFootsteps += 1
+                    lastDistance2 = distance2
                     if distance2 <= passThreshold:
                         speed = distance / timeElapsed
                         print(speed)
-                        websockets.broadcast(clients, json.dumps({"speed": speed}))
+                        websockets.broadcast(clients, json.dumps({"speed": speed, "footsteps": numFootsteps, "backtracks": numBacktracks}))
                         while distanceSensor2.distance * 100 <= passThreshold:
                             await asyncio.sleep(0.05)
                         state = "IDLE"
+                        speed = 0
+                        numFootsteps = 0
+                        numBacktracks = 0
                     elif timeElapsed > timeout:
                         print("Timed out")
                         state = "IDLE"
-                await asyncio.sleep(0.01)
+                await asyncio.sleep(0.05)
         print("Disconnected, reconnecting...")
         state = "IDLE"
 

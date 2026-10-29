@@ -32,10 +32,10 @@ def on_notify(_sender, data: bytearray):
     global state, startTime
     distance1 = float(data.decode().strip())
     print(distance1)
-    # if state == "IDLE" and distance1 < passThreshold:
-    #     state = "PASSED"
-    #     startTime = time.monotonic()
-    #     print("Sensor 1 passed, timing...")
+    if state == "IDLE" and distance1 < passThreshold:
+        state = "PASSED"
+        startTime = time.monotonic()
+        print("Sensor 1 passed, timing...")
 
 async def main():
     global state

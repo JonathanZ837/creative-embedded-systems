@@ -31,7 +31,8 @@ async def ws_handler(websocket):
 def on_notify(_sender, data: bytearray):
     global state, startTime
     distance1 = float(data.decode().strip())
-    print(distance1)
+    if state == "IDLE":
+        print(distance1)
     if state == "IDLE" and distance1 < passThreshold:
         state = "PASSED"
         startTime = time.monotonic()
@@ -54,8 +55,8 @@ async def main():
             while client.is_connected:
                 if state == "PASSED":
                     distance2 = distanceSensor2.distance * 100
+                    timeElapsed = time.monotonic() - startTime
                     if distance2 <= passThreshold:
-                        timeElapsed = time.monotonic() - startTime
                         speed = distance / timeElapsed
                         print(speed)
                         websockets.broadcast(clients, json.dumps({"speed": speed}))

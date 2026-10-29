@@ -19,7 +19,6 @@ passThreshold = 10 # distance threshold that registers as a pass
 distance = 3 # the fixed distance between two sensors
 timeout = 10 # seconds to wait for sensor 2 before resetting
 startTime = 0 # when sensor 1 was passed
-wasBlocked = False # was sensor 1 blocked on the last reading?
 
 async def ws_handler(websocket):
     clients.add(websocket)
@@ -30,14 +29,13 @@ async def ws_handler(websocket):
         clients.discard(websocket)
 
 def on_notify(_sender, data: bytearray):
-    global state, startTime, wasBlocked
+    global state, startTime
     distance1 = float(data.decode().strip())
-    blocked = 0 < distance1 <= passThreshold   # -1 means no echo
-    if state == "IDLE" and blocked and not wasBlocked:
-        state = "PASSED"
-        startTime = time.monotonic()
-        print("Sensor 1 passed, timing...")
-    wasBlocked = blocked
+    print(distance1)
+    # if state == "IDLE" and distance1 < passThreshold:
+    #     state = "PASSED"
+    #     startTime = time.monotonic()
+    #     print("Sensor 1 passed, timing...")
 
 async def main():
     global state

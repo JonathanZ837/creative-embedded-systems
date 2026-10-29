@@ -39,12 +39,6 @@ def on_notify(_sender, data: bytearray):
         print("Sensor 1 passed, timing...")
     wasBlocked = blocked
 
-
-# or maybe do some breathing exercises and it will change on how fast you were.
-def print_message(speed):
-
-        
-
 async def main():
     global state
     device = await BleakScanner.find_device_by_name(DEVICE_NAME, timeout=10)

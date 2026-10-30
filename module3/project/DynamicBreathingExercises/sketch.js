@@ -6,7 +6,7 @@ let breathStart = 0;
 let numCycles = 6;
 
 let state = "IDLE" // one of IDLE, BREATHING, SUCCESS
-let successDuration = 5000;
+let successDuration = 10000;
 
 class Dot {
 	constructor(x1, y1, x2, y2, inSize, outSize, colorIdx) {
@@ -49,6 +49,12 @@ function setup() {
 	createCanvas(windowWidth, windowHeight);
 	noCursor();
 	connect();
+
+	textSize(48); 
+	textFont('Georgia');
+	textAlign(CENTER, CENTER);
+
+	restartDots(1, 15, 8);
 }
 
 function finishBreathing() {
@@ -60,14 +66,14 @@ function finishBreathing() {
 function restartDots(speed, footsteps, backtracks) {
 	dots = [];
 	
-	breathPeriod = Math.sqrt(speed) * 3000
+	breathPeriod = Math.sqrt(speed) * 5000
 	breathStart = millis();
 	let inRadius = 0
-	let outRadius = 60 * footsteps
-	let inSize = 30 * footsteps
-	let outSize = 60 * footsteps
+	let outRadius = 30 * min(footsteps, 10)
+	let inSize = 30 * min(footsteps, 10)
+	let outSize = 60 * min(footsteps, 10)
 	numCycles = max(1, 2 * floor(speed))
-	let numDots = floor((speed + footsteps + backtracks)/3 + 3)
+	let numDots = floor((speed + footsteps + backtracks)/3)
 	for (let i = 0; i < numDots; i++) {
 		let deg = (TWO_PI/numDots) * i
 		let newDot = new Dot(Math.cos(deg) * inRadius, Math.sin(deg) * inRadius, Math.cos(deg) * outRadius, Math.sin(deg) * outRadius, inSize, outSize, floor(backtracks) % 5);
@@ -99,10 +105,10 @@ function draw() {
 		}
 	} else if (state == "IDLE") {
 		fill(0, 0, 0);
-		text("Waiting for readings", -10, 0);
+		text("Waiting for readings", 0, 0);
 	} else if (state == "SUCCESS") {
 		fill(0, 0, 0);
-		text("You're done. Go about your day a little more relaxed! :)", -20, 0);
+		text("You're done. Go about your day a little more relaxed! :)", 0, 0);
 		if (millis() - successStart > successDuration) {
 			state = "IDLE";
 		}

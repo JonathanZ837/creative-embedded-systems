@@ -58,9 +58,9 @@ async def main():
                 if state == "PASSED":
                     distance2 = distanceSensor2.distance * 100
                     timeElapsed = time.monotonic() - startTime
-                    if lastDistance2 < distance2:
+                    if lastDistance2 < distance2-0.2:
                         numBacktracks += 1
-                    if distance2 < lastDistance2 and distance2 - lastDistance2 < 0.5:
+                    if distance2 < lastDistance2 and distance2 - lastDistance2 > 0.5:
                         numFootsteps += 1
                     lastDistance2 = distance2
                     if distance2 <= passThreshold:

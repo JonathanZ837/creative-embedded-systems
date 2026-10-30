@@ -98,9 +98,11 @@ function draw() {
 			dots[i].draw(t);
 		}
 	} else if (state == "IDLE") {
-		text("Waiting for readings", 0, 0);
+		fill(0, 0, 0);
+		text("Waiting for readings", -10, 0);
 	} else if (state == "SUCCESS") {
-		text("Good job. Go about your day a little more relaxed! :)", 0, 0);
+		fill(0, 0, 0);
+		text("You're done. Go about your day a little more relaxed! :)", -20, 0);
 		if (millis() - successStart > successDuration) {
 			state = "IDLE";
 		}

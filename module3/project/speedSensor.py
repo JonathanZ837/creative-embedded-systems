@@ -15,7 +15,7 @@ DEVICE_NAME = "ESP32_Sensor"
 CHAR_UUID = "a7c2e1f1-3b4d-4e8a-9c1f-2d5e6f708192"
 
 state = "IDLE" # states are IDLE or PASSED
-passThreshold = 10 # distance threshold that registers as a pass
+passThreshold = 30 # distance threshold that registers as a pass
 distance = 3 # the fixed distance between two sensors
 timeout = 10 # seconds to wait for sensor 2 before resetting
 startTime = 0 # when sensor 1 was passed
@@ -69,20 +69,22 @@ async def main():
                     if distance2 <= passThreshold:
                         speed = distance / timeElapsed
                         print(speed)
+                        print(numFootsteps)
+                        print(numBacktracks)
                         websockets.broadcast(clients, json.dumps({"speed": speed, "footsteps": numFootsteps, "backtracks": numBacktracks}))
                         while distanceSensor2.distance * 100 <= passThreshold:
                             await asyncio.sleep(0.05)
                         speed = 0
                         numFootsteps = 0
                         numBacktracks = 0
-                        state = "IDLE"
+                        state = "asdf"
                     elif timeElapsed > timeout:
                         print("Timed out")
                         speed = 0
                         numFootsteps = 0
                         numBacktracks = 0
                         state = "IDLE"
-                await asyncio.sleep(0.05)
+                await asyncio.sleep(0.5)
         print("Disconnected, reconnecting...")
         state = "IDLE"
 

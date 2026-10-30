@@ -73,16 +73,16 @@ function restartDots(speed, footsteps, backtracks) {
 	let outRadius = 30 * constrain(footsteps, 1, 10)
 	let inSize = 30 * constrain(footsteps, 1, 10)
 	let outSize = 60 * constrain(footsteps, 1, 10)
-	numCycles = max(1, 2 * floor(speed))
+	numCycles = max(1, floor(speed))
 	let numDots = floor((speed + footsteps + backtracks)/3)
 
 	for (let i = 0; i < numDots; i++) {
 		let deg = (TWO_PI/numDots) * i
-		let newDot = new Dot(Math.cos(deg) * inRadius, Math.sin(deg) * inRadius, Math.cos(deg) * outRadius, Math.sin(deg) * outRadius, inSize, outSize, backtracks % 5);
+		let newDot = new Dot(Math.cos(deg) * inRadius, Math.sin(deg) * inRadius, Math.cos(deg) * outRadius, Math.sin(deg) * outRadius, inSize, outSize, footsteps % 7);
 		dots.push(newDot)
 	}
 
-	let newDot = new Dot(0,0,0,0, 0, outSize, (backtracks + 2) % 5);
+	let newDot = new Dot(0,0,0,0, 0, outSize, (footsteps + 1) % 7);
 	dots.push(newDot);
 
 	state = "BREATHING";
@@ -107,7 +107,7 @@ function draw() {
 		}
 	} else if (state == "IDLE") {
 		fill(0, 0, 0);
-		text("Waiting for readings", 0, 0);
+		text("Want to destress?\n Come closer to the display for a personal breathing exercise!", 0, 0);
 	} else if (state == "SUCCESS") {
 		fill(0, 0, 0);
 		text("You're done. Go about your day a little more relaxed! :)", 0, 0);

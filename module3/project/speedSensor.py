@@ -35,7 +35,7 @@ async def ws_handler(websocket):
 def on_notify(_sender, data: bytearray):
     global state, startTime
     distance1 = float(data.decode().strip())
-    if state == "IDLE" and distance1 < passThreshold:
+    if state == "IDLE" and distance1 != -1.0 and distance1 < passThreshold:
         state = "PASSED"
         startTime = time.monotonic()
         print("Sensor 1 passed, timing...")
@@ -58,9 +58,9 @@ async def main():
                 if state == "PASSED":
                     distance2 = distanceSensor2.distance * 100
                     timeElapsed = time.monotonic() - startTime
-                    if lastDistance2 < distance2-0.2:
+                    if lastDistance2 < distance2-5:
                         numBacktracks += 1
-                    if distance2 < lastDistance2 and distance2 - lastDistance2 > 0.2:
+                    if distance2 < lastDistance2 and lastDistance2 - distance2 > 10:
                         numFootsteps += 1
                     lastDistance2 = distance2
                     if distance2 <= passThreshold:

@@ -54,7 +54,6 @@ function setup() {
 	textFont('Georgia');
 	textAlign(CENTER, CENTER);
 
-	restartDots(1, 15, 8);
 }
 
 function finishBreathing() {

@@ -1,32 +1,28 @@
 let colorPalette = [[249, 65, 68, 120], [243, 114, 44, 120], [248, 150, 30, 120], [249, 199, 79, 120], [144, 190, 109, 120], [67, 170, 139, 120], [87, 117, 144, 120]]; // warm to cold
 let dots = [];
 
-let numDots = 6;
-
-let inRadius = 0;
-let outRadius = 0;
-
-let inSize = 30;
-let outSize = 80;
 let breathPeriod = 0;
 let breathStart = 0;
 let numCycles = 6;
 
 let state = "IDLE" // one of IDLE, BREATHING, SUCCESS
 let successDuration = 5000;
+
 class Dot {
-	constructor(x1, y1, x2, y2, colorIdx) {
+	constructor(x1, y1, x2, y2, inSize, outSize, colorIdx) {
 		this.x1 = x1;
 		this.y1 = y1;
 		this.x2 = x2;
 		this.y2 = y2;
 		this.colorIdx = colorIdx;
+		this.inSize = inSize;
+		this.outSize = outSize;
 	}
 
 	draw(t) {
 		let x = lerp(this.x1, this.x2, t);
 		let y = lerp(this.y1, this.y2, t);
-		let size = lerp(outSize, inSize, t);
+		let size = lerp(this.outSize, this.inSize, t);
 		
 		fill(colorPalette[this.colorIdx]);
 		circle(x, y, size);
@@ -58,19 +54,23 @@ function finishBreathing() {
 
 function restartDots(speed, footsteps, backtracks) {
 	dots = [];
+	
 	breathPeriod = Math.sqrt(speed) * 3000
 	breathStart = millis();
-	inRadius = 10
-	outRadius = 30 * footsteps
-	inSize = 10 * footsteps
-	outSize = 30 * footsteps
+	let inRadius = 0
+	let outRadius = 30 * footsteps
+	let inSize = 10 * footsteps
+	let outSize = 30 * footsteps
 	numCycles = max(1, 2 * floor(speed))
-	// do something with footsteps and backtracks later, maybe change color and number of dots	
+	let numDots = floor((speed + footsteps + backtracks)/3 + 3)
 	for (let i = 0; i < numDots; i++) {
 		let deg = (TWO_PI/numDots) * i
-		let newDot = new Dot(Math.cos(deg) * inRadius, Math.sin(deg) * inRadius, Math.cos(deg) * outRadius, Math.sin(deg) * outRadius, min(5, floor(backtracks)));
+		let newDot = new Dot(Math.cos(deg) * inRadius, Math.sin(deg) * inRadius, Math.cos(deg) * outRadius, Math.sin(deg) * outRadius, inSize, outSize, floor(backtracks) % 5);
 		dots.push(newDot)
 	}
+
+	let newDot = new Dot(0,0,0,0, 0, outSize, (floor(backtracks) - 2) % 5);
+	dots.push(newDot);
 
 	state = "BREATHING";
 }
@@ -89,7 +89,7 @@ function draw() {
 			finishBreathing();
 			return;
 		}
-		for (let i = 0; i < numDots; i++) {
+		for (let i = 0; i < dots.length; i++) {
 			dots[i].draw(t);
 		}
 	} else if (state == "IDLE") {

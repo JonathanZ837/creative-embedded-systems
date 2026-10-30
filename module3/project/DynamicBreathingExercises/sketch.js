@@ -30,20 +30,25 @@ class Dot {
 	}
 }
 
+function connect() {
+	socket = new WebSocket("ws://localhost:8765");
+	socket.onopen = () => console.log("Connected to Pi");
+	socket.onmessage = (event) => {
+		const msg = JSON.parse(event.data);
+		console.log("Received", msg);
+		restartDots(msg.speed, msg.footsteps, msg.backtracks);
+	};
+	socket.onclose = () => {
+		console.log("Disconnected, retrying in 2 s...");
+		setTimeout(connect, 2000);
+	};
+}
+
+
 function setup() {
 	createCanvas(windowWidth, windowHeight);
 	noCursor();
-	socket = new WebSocket("ws://localhost:8765");
-
-	socket.onmessage = (event) => {
-		const msg = JSON.parse(event.data);
-		speed = msg.speed;
-		footsteps = msg.footsteps;
-		backtracks = msg.backtracks;
-		restartDots(speed, footsteps, backtracks);
-	};
-
-	restartDots(3, 5, 2);
+	connect();
 }
 
 function finishBreathing() {
@@ -58,9 +63,9 @@ function restartDots(speed, footsteps, backtracks) {
 	breathPeriod = Math.sqrt(speed) * 3000
 	breathStart = millis();
 	let inRadius = 0
-	let outRadius = 30 * footsteps
-	let inSize = 10 * footsteps
-	let outSize = 30 * footsteps
+	let outRadius = 60 * footsteps
+	let inSize = 30 * footsteps
+	let outSize = 60 * footsteps
 	numCycles = max(1, 2 * floor(speed))
 	let numDots = floor((speed + footsteps + backtracks)/3 + 3)
 	for (let i = 0; i < numDots; i++) {

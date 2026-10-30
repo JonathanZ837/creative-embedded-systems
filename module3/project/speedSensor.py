@@ -9,7 +9,7 @@ import websockets
 
 clients = set()
 
-distanceSensor2 = DistanceSensor(echo=24, trigger=23)  # the one on the pi
+distanceSensor2 = DistanceSensor(echo=24, trigger=23, max_distance=4)  # the one on the pi
 
 DEVICE_NAME = "ESP32_Sensor"
 CHAR_UUID = "a7c2e1f1-3b4d-4e8a-9c1f-2d5e6f708192"
@@ -35,8 +35,6 @@ async def ws_handler(websocket):
 def on_notify(_sender, data: bytearray):
     global state, startTime
     distance1 = float(data.decode().strip())
-    if state == "IDLE":
-        print(distance1)
     if state == "IDLE" and distance1 < passThreshold:
         state = "PASSED"
         startTime = time.monotonic()
@@ -60,7 +58,6 @@ async def main():
                 if state == "PASSED":
                     distance2 = distanceSensor2.distance * 100
                     timeElapsed = time.monotonic() - startTime
-                    print("distance2: " + str(distance2))
                     if lastDistance2 < distance2:
                         numBacktracks += 1
                     if distance2 < lastDistance2 and distance2 - lastDistance2 < 0.5:
@@ -68,23 +65,25 @@ async def main():
                     lastDistance2 = distance2
                     if distance2 <= passThreshold:
                         speed = distance / timeElapsed
-                        print(speed)
-                        print(numFootsteps)
-                        print(numBacktracks)
+                        print("speed: " + str(speed))
+                        print("footsteps: " + str(numFootsteps))
+                        print("backtracks: " + str(numBacktracks))
                         websockets.broadcast(clients, json.dumps({"speed": speed, "footsteps": numFootsteps, "backtracks": numBacktracks}))
                         while distanceSensor2.distance * 100 <= passThreshold:
                             await asyncio.sleep(0.05)
                         speed = 0
                         numFootsteps = 0
                         numBacktracks = 0
-                        state = "asdf"
+                        lastDistance2 = 0
+                        state = "IDLE"
                     elif timeElapsed > timeout:
                         print("Timed out")
                         speed = 0
                         numFootsteps = 0
                         numBacktracks = 0
+                        lastDistance2 = 0
                         state = "IDLE"
-                await asyncio.sleep(0.5)
+                await asyncio.sleep(0.05)
         print("Disconnected, reconnecting...")
         state = "IDLE"
 

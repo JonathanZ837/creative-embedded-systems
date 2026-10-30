@@ -65,8 +65,10 @@ function finishBreathing() {
 
 function restartDots(speed, footsteps, backtracks) {
 	dots = [];
+
+	speed *= 5
 	
-	breathPeriod = Math.sqrt(speed) * 5000
+	breathPeriod = Math.sqrt(speed) * 4000
 	breathStart = millis();
 	let inRadius = 0
 	let outRadius = 30 * min(footsteps, 10)
@@ -80,7 +82,7 @@ function restartDots(speed, footsteps, backtracks) {
 		dots.push(newDot)
 	}
 
-	let newDot = new Dot(0,0,0,0, 0, outSize, (floor(backtracks) - 2) % 5);
+	let newDot = new Dot(0,0,0,0, 0, outSize, (floor(backtracks) + 2) % 5);
 	dots.push(newDot);
 
 	state = "BREATHING";

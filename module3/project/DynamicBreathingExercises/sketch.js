@@ -70,9 +70,9 @@ function restartDots(speed, footsteps, backtracks) {
 	breathPeriod = Math.sqrt(speed) * 4000
 	breathStart = millis();
 	let inRadius = 0
-	let outRadius = 30 * min(footsteps, 10)
-	let inSize = 30 * min(footsteps, 10)
-	let outSize = 60 * min(footsteps, 10)
+	let outRadius = 30 * constrain(footsteps, 1, 10)
+	let inSize = 30 * constrain(footsteps, 1, 10)
+	let outSize = 60 * constrain(footsteps, 1, 10)
 	numCycles = max(1, 2 * floor(speed))
 	let numDots = floor((speed + footsteps + backtracks)/3)
 

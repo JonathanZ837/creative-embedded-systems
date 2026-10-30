@@ -75,13 +75,14 @@ function restartDots(speed, footsteps, backtracks) {
 	let outSize = 60 * min(footsteps, 10)
 	numCycles = max(1, 2 * floor(speed))
 	let numDots = floor((speed + footsteps + backtracks)/3)
+
 	for (let i = 0; i < numDots; i++) {
 		let deg = (TWO_PI/numDots) * i
-		let newDot = new Dot(Math.cos(deg) * inRadius, Math.sin(deg) * inRadius, Math.cos(deg) * outRadius, Math.sin(deg) * outRadius, inSize, outSize, floor(backtracks) % 5);
+		let newDot = new Dot(Math.cos(deg) * inRadius, Math.sin(deg) * inRadius, Math.cos(deg) * outRadius, Math.sin(deg) * outRadius, inSize, outSize, backtracks % 5);
 		dots.push(newDot)
 	}
 
-	let newDot = new Dot(0,0,0,0, 0, outSize, (floor(backtracks) + 2) % 5);
+	let newDot = new Dot(0,0,0,0, 0, outSize, (backtracks + 2) % 5);
 	dots.push(newDot);
 
 	state = "BREATHING";

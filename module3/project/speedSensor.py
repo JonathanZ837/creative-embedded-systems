@@ -60,7 +60,7 @@ async def main():
                     timeElapsed = time.monotonic() - startTime
                     if lastDistance2 < distance2-0.2:
                         numBacktracks += 1
-                    if distance2 < lastDistance2 and distance2 - lastDistance2 > 0.5:
+                    if distance2 < lastDistance2 and distance2 - lastDistance2 > 0.2:
                         numFootsteps += 1
                     lastDistance2 = distance2
                     if distance2 <= passThreshold:

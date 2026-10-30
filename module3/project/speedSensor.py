@@ -9,7 +9,7 @@ import websockets
 
 clients = set()
 
-distanceSensor2 = DistanceSensor(echo=24, trigger=23, max_distance=4)  # the one on the pi
+distanceSensor2 = DistanceSensor(echo=24, trigger=23)  # the one on the pi
 
 DEVICE_NAME = "ESP32_Sensor"
 CHAR_UUID = "a7c2e1f1-3b4d-4e8a-9c1f-2d5e6f708192"
@@ -43,7 +43,7 @@ def on_notify(_sender, data: bytearray):
         print("Sensor 1 passed, timing...")
 
 async def main():
-    global state
+    global state, numFootsteps, numBacktracks, lastDistance2
     device = await BleakScanner.find_device_by_name(DEVICE_NAME, timeout=10)
 
     if device is None:
@@ -72,12 +72,15 @@ async def main():
                         websockets.broadcast(clients, json.dumps({"speed": speed, "footsteps": numFootsteps, "backtracks": numBacktracks}))
                         while distanceSensor2.distance * 100 <= passThreshold:
                             await asyncio.sleep(0.05)
-                        state = "IDLE"
                         speed = 0
                         numFootsteps = 0
                         numBacktracks = 0
+                        state = "IDLE"
                     elif timeElapsed > timeout:
                         print("Timed out")
+                        speed = 0
+                        numFootsteps = 0
+                        numBacktracks = 0
                         state = "IDLE"
                 await asyncio.sleep(0.05)
         print("Disconnected, reconnecting...")
